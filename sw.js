@@ -7,6 +7,9 @@ const SHELL_FILES = [
   "./app.js",
   "./config.js",
   "./manifest.webmanifest",
+  "./manifest-1.webmanifest",
+  "./manifest-2.webmanifest",
+  "./manifest-3.webmanifest",
   "./icon-192.png",
   "./icon-512.png"
 ];

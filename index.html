@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Parcel Proof</title>
 <link rel="manifest" id="manifest-link" href="manifest.webmanifest">
+<script>
+  // Pick the correct per-warehouse manifest file BEFORE the page finishes
+  // loading, using a plain static file (not built on the fly) - this is
+  // what iOS reliably reads when "Add to Home Screen" is used.
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var wh = params.get("wh") || localStorage.getItem("warehouse");
+    if (wh) {
+      document.getElementById("manifest-link").setAttribute(
+        "href", "manifest-" + encodeURIComponent(wh) + ".webmanifest"
+      );
+    }
+  })();
+</script>
 <meta name="theme-color" content="#1A1D21">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">

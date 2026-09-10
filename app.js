@@ -35,31 +35,6 @@ if (!warehouse) {
   statusEl.textContent = "Open this page once using the correct link (ending in ?wh=1, ?wh=2, etc.) before adding it to the home screen.";
 } else {
   warehouseEl.textContent = "Warehouse " + warehouse;
-  buildTaggedManifest(warehouse);
-}
-
-// iOS reads whichever manifest is linked in the page RIGHT NOW when you tap
-// "Add to Home Screen," and uses that manifest's start_url forever after -
-// it ignores the address bar. So we build a manifest with the warehouse tag
-// baked into start_url, and swap the page's manifest link to point at it.
-function buildTaggedManifest(wh) {
-  const manifest = {
-    name: "Parcel Proof - Warehouse " + wh,
-    short_name: "Parcel Proof " + wh,
-    start_url: "./index.html?wh=" + encodeURIComponent(wh),
-    scope: "./",
-    display: "standalone",
-    background_color: "#1A1D21",
-    theme_color: "#1A1D21",
-    orientation: "portrait",
-    icons: [
-      { src: "icon-192.png", sizes: "192x192", type: "image/png" },
-      { src: "icon-512.png", sizes: "512x512", type: "image/png" }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
-  const url = URL.createObjectURL(blob);
-  document.getElementById("manifest-link").setAttribute("href", url);
 }
 
 // ---- 2. Local offline queue, stored in IndexedDB (survives app close / no signal) ----
