@@ -1,4 +1,7 @@
-const CACHE_NAME = "parcel-proof-shell-v2";
+// Cache name includes a version - bump this string any time the app is
+// updated, so old phones automatically drop stale cached files instead
+// of getting stuck on an old version forever.
+const CACHE_NAME = "parcel-proof-shell-v3";
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -23,20 +26,21 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// NETWORK-FIRST: always try to get the latest file from the internet first.
+// Only fall back to the saved local copy if there's no connection. This is
+// what makes sure phones pick up updates automatically next time they have
+// signal, instead of being stuck on an old cached version.
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return (
-        cached ||
-        fetch(event.request).then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return response;
-        }).catch(() => cached)
-      );
-    })
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
