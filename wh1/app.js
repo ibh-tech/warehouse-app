@@ -66,6 +66,56 @@ async function refreshQueueCount() {
   return all.length;
 }
 
+// ---- Compress the photo before it ever gets queued/uploaded ----
+// Resizes to a sensible max dimension and re-encodes as JPEG at ~75%
+// quality. This cuts typical phone photos (3-5 MB) down to roughly
+// 200-400 KB with very little visible quality loss - which matters a
+// lot on a free Supabase storage plan capped at 1 GB total.
+const MAX_DIMENSION = 1600;
+const JPEG_QUALITY = 0.75;
+
+function compressImage(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        if (width > height) {
+          height = Math.round((height * MAX_DIMENSION) / width);
+          width = MAX_DIMENSION;
+        } else {
+          width = Math.round((width * MAX_DIMENSION) / height);
+          height = MAX_DIMENSION;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(objectUrl);
+          resolve(blob || file); // fall back to original if compression fails
+        },
+        "image/jpeg",
+        JPEG_QUALITY
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file); // fall back to original if it can't be read as an image
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 // ---- Capture handler ----
 captureBtn.addEventListener("click", () => {
   if (!invoiceInput.value.trim()) {
@@ -81,11 +131,14 @@ fileInput.addEventListener("change", async () => {
   fileInput.value = ""; // reset so the same photo can be retaken if needed
   if (!file) return;
 
+  statusEl.textContent = "Processing photo...";
+  const compressed = await compressImage(file);
+
   const capturedAt = new Date().toISOString(); // the REAL moment of capture
   const invoiceNumber = invoiceInput.value.trim();
 
   await queueAdd({
-    blob: file,
+    blob: compressed,
     warehouse: WAREHOUSE,
     capturedAt: capturedAt,
     invoiceNumber: invoiceNumber
