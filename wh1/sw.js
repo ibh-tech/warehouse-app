@@ -1,7 +1,7 @@
 // Cache name includes a version - bump this string any time the app is
 // updated, so old phones automatically drop stale cached files instead
 // of getting stuck on an old version forever.
-const CACHE_NAME = "parcel-proof-shell-v7";
+const CACHE_NAME = "parcel-proof-shell-v8";
 const SHELL_FILES = [
   "./",
   "./index.html",
