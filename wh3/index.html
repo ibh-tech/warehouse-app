@@ -5,18 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Parcel Proof - Warehouse 3</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1A1D21">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
   :root {
-    --bg: #1A1D21;
-    --panel: #22262B;
-    --amber: #F5A623;
-    --amber-dim: #8a6017;
-    --text: #EDEFF2;
-    --text-dim: #8C939C;
+    --bg: #FFFFFF;
+    --panel: #F3F5F8;
+    --panel-border: #DEE2E8;
+    --navy: #002F5C;
+    --navy-dim: #B7C4D3;
+    --red: #E31E24;
+    --text: #14181F;
+    --text-dim: #6B7280;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -32,13 +34,21 @@
     min-height: 100dvh;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  header { padding: 18px 20px 10px; text-align: center; }
+  header {
+    padding: 20px 20px 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  header img { height: 40px; width: auto; }
   .warehouse-label {
     font-size: 15px;
     font-weight: 600;
     letter-spacing: 0.02em;
-    color: var(--amber);
-    border: 1px solid var(--amber-dim);
+    color: var(--navy);
+    border: 1.5px solid var(--navy-dim);
     display: inline-block;
     padding: 6px 16px;
     border-radius: 999px;
@@ -57,20 +67,20 @@
     padding: 16px 18px;
     font-size: 18px;
     border-radius: 12px;
-    border: 1.5px solid #3a3d42;
+    border: 1.5px solid var(--panel-border);
     background: var(--panel);
     color: var(--text);
     text-align: center;
   }
-  #invoice-input:focus { outline: none; border-color: var(--amber); }
+  #invoice-input:focus { outline: none; border-color: var(--navy); }
   #invoice-input::placeholder { color: var(--text-dim); }
   #capture-btn {
     width: min(62vw, 260px);
     height: min(62vw, 260px);
     border-radius: 50%;
-    background: var(--amber);
+    background: var(--navy);
     border: none;
-    box-shadow: 0 0 0 10px rgba(245, 166, 35, 0.12);
+    box-shadow: 0 0 0 10px rgba(0, 47, 92, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -78,22 +88,23 @@
     transition: transform 0.08s ease;
   }
   #capture-btn:active { transform: scale(0.94); }
-  #capture-btn:disabled { background: #3a3d42; box-shadow: none; }
+  #capture-btn:disabled { background: #C2C8D0; box-shadow: none; }
   #capture-btn svg { width: 42%; height: 42%; }
-  .btn-label { font-size: 18px; font-weight: 700; letter-spacing: 0.02em; color: var(--bg); }
+  .btn-label { font-size: 18px; font-weight: 700; letter-spacing: 0.02em; color: #FFFFFF; }
   #capture-btn .label-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   #status { font-size: 15px; color: var(--text-dim); text-align: center; min-height: 20px; max-width: 320px; }
   footer { padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); text-align: center; font-size: 13px; color: var(--text-dim); }
   #flash {
-    position: fixed; inset: 0; background: #fff; opacity: 0;
+    position: fixed; inset: 0; background: var(--navy); opacity: 0;
     pointer-events: none; transition: opacity 0.15s ease; z-index: 10;
   }
-  #flash.show { opacity: 0.85; transition: none; }
+  #flash.show { opacity: 0.18; transition: none; }
 </style>
 </head>
 <body>
   <div id="flash"></div>
   <header>
+    <img src="logo.png" alt="Company logo">
     <span id="warehouse-label" class="warehouse-label">Loading...</span>
   </header>
   <main>
@@ -101,8 +112,8 @@
     <button id="capture-btn">
       <span class="label-wrap">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 8a2 2 0 0 1 2-2h1.2l.9-1.5A2 2 0 0 1 9.83 3.5h4.34a2 2 0 0 1 1.73 1L16.8 6H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" stroke="#1A1D21" stroke-width="1.6"/>
-          <circle cx="12" cy="13" r="3.4" stroke="#1A1D21" stroke-width="1.6"/>
+          <path d="M4 8a2 2 0 0 1 2-2h1.2l.9-1.5A2 2 0 0 1 9.83 3.5h4.34a2 2 0 0 1 1.73 1L16.8 6H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" stroke="#FFFFFF" stroke-width="1.6"/>
+          <circle cx="12" cy="13" r="3.4" stroke="#FFFFFF" stroke-width="1.6"/>
         </svg>
         <span class="btn-label">TAKE PHOTO</span>
       </span>
