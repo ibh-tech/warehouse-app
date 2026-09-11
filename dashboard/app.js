@@ -92,6 +92,9 @@ function render() {
     const card = document.createElement("div");
     card.className = "card";
 
+    const imgWrap = document.createElement("div");
+    imgWrap.className = "img-wrap";
+
     const img = document.createElement("img");
     img.src = publicUrl(p.photo_path);
     img.loading = "lazy";
@@ -99,6 +102,23 @@ function render() {
       lightboxImg.src = img.src;
       lightbox.classList.add("show");
     });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete-btn";
+    deleteBtn.title = "Delete this photo";
+    deleteBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 7h14M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7h10Z" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10 11v6M14 11v6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    `;
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      deletePhoto(p);
+    });
+
+    imgWrap.appendChild(img);
+    imgWrap.appendChild(deleteBtn);
 
     const body = document.createElement("div");
     body.className = "card-body";
@@ -110,9 +130,48 @@ function render() {
       </div>
     `;
 
-    card.appendChild(img);
+    card.appendChild(imgWrap);
     card.appendChild(body);
     grid.appendChild(card);
+  }
+}
+
+async function deletePhoto(p) {
+  const label = p.invoice_number ? `invoice ${p.invoice_number}` : "this photo";
+  if (!confirm(`Delete ${label}? This removes it from storage and the table, and cannot be undone.`)) {
+    return;
+  }
+  try {
+    const storageRes = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/parcel-photos/${p.photo_path}`,
+      {
+        method: "DELETE",
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      }
+    );
+    // 404 just means the file was already gone - fine to continue either way
+    if (!storageRes.ok && storageRes.status !== 404) {
+      throw new Error("Storage delete failed: " + storageRes.status);
+    }
+
+    const rowRes = await fetch(`${SUPABASE_URL}/rest/v1/photos?id=eq.${p.id}`, {
+      method: "DELETE",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "Prefer": "return=minimal"
+      }
+    });
+    if (!rowRes.ok) throw new Error("Row delete failed: " + rowRes.status);
+
+    allPhotos = allPhotos.filter((x) => x.id !== p.id);
+    render();
+  } catch (err) {
+    alert("Could not delete this photo. Check your connection and try again.");
+    console.error(err);
   }
 }
 

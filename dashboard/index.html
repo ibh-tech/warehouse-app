@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Parcel Proof - Dashboard</title>
+<title>Warehouse Dashboard</title>
 <style>
   :root {
     --bg: #FFFFFF;
@@ -11,6 +11,7 @@
     --panel-border: #DEE2E8;
     --navy: #002F5C;
     --navy-dim: #B7C4D3;
+    --red: #E31E24;
     --text: #14181F;
     --text-dim: #6B7280;
   }
@@ -99,6 +100,22 @@
     cursor: pointer;
     display: block;
   }
+  .img-wrap { position: relative; }
+  .delete-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: rgba(20, 24, 31, 0.55);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .delete-btn:hover { background: var(--red, #C0392B); }
+  .delete-btn svg { width: 16px; height: 16px; }
   .card-body { padding: 12px 14px 14px; }
   .invoice { font-weight: 700; font-size: 15px; margin-bottom: 4px; word-break: break-all; }
   .meta-row {
@@ -151,7 +168,7 @@
   <header>
     <img src="logo.png" alt="Company logo">
     <div class="title-block">
-      <h1>Parcel Proof - Dashboard</h1>
+      <h1>Warehouse Dashboard</h1>
       <div class="sub">All uploaded packing photos</div>
     </div>
   </header>

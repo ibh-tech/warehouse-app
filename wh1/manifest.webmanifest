@@ -1,6 +1,6 @@
 {
-  "name": "Parcel Proof - Warehouse 1",
-  "short_name": "Parcel Proof 1",
+  "name": "Warehouse 1",
+  "short_name": "Warehouse 1",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
