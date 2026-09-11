@@ -11,6 +11,7 @@ const queueCountEl = document.getElementById("queue-count");
 const captureBtn = document.getElementById("capture-btn");
 const fileInput = document.getElementById("file-input");
 const flashEl = document.getElementById("flash");
+const invoiceInput = document.getElementById("invoice-input");
 
 warehouseEl.textContent = "Warehouse " + WAREHOUSE;
 
@@ -66,7 +67,14 @@ async function refreshQueueCount() {
 }
 
 // ---- Capture handler ----
-captureBtn.addEventListener("click", () => fileInput.click());
+captureBtn.addEventListener("click", () => {
+  if (!invoiceInput.value.trim()) {
+    statusEl.textContent = "Enter the invoice/order number first.";
+    invoiceInput.focus();
+    return;
+  }
+  fileInput.click();
+});
 
 fileInput.addEventListener("change", async () => {
   const file = fileInput.files[0];
@@ -74,15 +82,19 @@ fileInput.addEventListener("change", async () => {
   if (!file) return;
 
   const capturedAt = new Date().toISOString(); // the REAL moment of capture
+  const invoiceNumber = invoiceInput.value.trim();
 
   await queueAdd({
     blob: file,
     warehouse: WAREHOUSE,
-    capturedAt: capturedAt
+    capturedAt: capturedAt,
+    invoiceNumber: invoiceNumber
   });
 
   flashEl.classList.add("show");
   setTimeout(() => flashEl.classList.remove("show"), 250);
+
+  invoiceInput.value = ""; // ready for the next parcel
 
   await refreshQueueCount();
   statusEl.textContent = "Photo saved. Uploading...";
@@ -94,7 +106,8 @@ let syncing = false;
 
 async function uploadOne(item) {
   const ext = (item.blob.type && item.blob.type.includes("png")) ? "png" : "jpg";
-  const path = `${item.warehouse}/${item.capturedAt.replace(/[:.]/g, "-")}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const safeInvoice = (item.invoiceNumber || "unknown").replace(/[^a-zA-Z0-9_-]/g, "");
+  const path = `${item.warehouse}/${safeInvoice}-${item.capturedAt.replace(/[:.]/g, "-")}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const uploadRes = await fetch(
     `${SUPABASE_URL}/storage/v1/object/parcel-photos/${path}`,
@@ -121,7 +134,8 @@ async function uploadOne(item) {
     body: JSON.stringify({
       warehouse: item.warehouse,
       photo_path: path,
-      captured_at: item.capturedAt
+      captured_at: item.capturedAt,
+      invoice_number: item.invoiceNumber || null
     })
   });
   if (!insertRes.ok) throw new Error("row insert failed: " + insertRes.status);
