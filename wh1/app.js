@@ -12,8 +12,23 @@ const captureBtn = document.getElementById("capture-btn");
 const fileInput = document.getElementById("file-input");
 const flashEl = document.getElementById("flash");
 const invoiceInput = document.getElementById("invoice-input");
+const successCheckEl = document.getElementById("success-check");
 
 warehouseEl.textContent = "Warehouse " + WAREHOUSE;
+
+// type: "ok" (green), "error" (red), "busy" (gray), or omit for neutral gray
+function setStatus(text, type) {
+  statusEl.textContent = text;
+  statusEl.classList.remove("status-ok", "status-error", "status-busy");
+  if (type) statusEl.classList.add("status-" + type);
+}
+
+function showSuccessCheck() {
+  successCheckEl.classList.remove("show");
+  // force reflow so the animation can restart if triggered again quickly
+  void successCheckEl.offsetWidth;
+  successCheckEl.classList.add("show");
+}
 
 // ---- Local offline queue, stored in IndexedDB (survives app close / no signal) ----
 const DB_NAME = "parcel-proof-db";
@@ -119,7 +134,7 @@ function compressImage(file) {
 // ---- Capture handler ----
 captureBtn.addEventListener("click", () => {
   if (!invoiceInput.value.trim()) {
-    statusEl.textContent = "Enter the invoice/order number first.";
+    setStatus("Enter the invoice/order number first.", "error");
     invoiceInput.focus();
     return;
   }
@@ -131,7 +146,7 @@ fileInput.addEventListener("change", async () => {
   fileInput.value = ""; // reset so the same photo can be retaken if needed
   if (!file) return;
 
-  statusEl.textContent = "Processing photo...";
+  setStatus("Processing photo...", "busy");
   const compressed = await compressImage(file);
 
   const capturedAt = new Date().toISOString(); // the REAL moment of capture
@@ -150,7 +165,7 @@ fileInput.addEventListener("change", async () => {
   invoiceInput.value = ""; // ready for the next parcel
 
   await refreshQueueCount();
-  statusEl.textContent = "Photo saved. Uploading...";
+  setStatus("Photo saved. Uploading...", "busy");
   trySync();
 });
 
@@ -197,31 +212,38 @@ async function uploadOne(item) {
 async function trySync() {
   if (syncing) return;
   if (typeof SUPABASE_URL === "undefined" || SUPABASE_URL.includes("PASTE_")) {
-    statusEl.textContent = "Config not set up yet (config.js still has placeholder values).";
+    setStatus("Config not set up yet (config.js still has placeholder values).", "error");
     return;
   }
   syncing = true;
+  let hadItems = false;
+  let allSucceeded = true;
   try {
     const items = await queueGetAll();
     if (items.length === 0) {
-      statusEl.textContent = "Ready.";
+      setStatus("Ready.", "ok");
       syncing = false;
       return;
     }
-    statusEl.textContent = `Uploading ${items.length} photo(s)...`;
+    hadItems = true;
+    setStatus(`Uploading ${items.length} photo(s)...`, "busy");
     for (const item of items) {
       try {
         await uploadOne(item);
         await queueDelete(item.id);
       } catch (err) {
         console.warn("Upload failed, will retry:", err);
-        statusEl.textContent = "Offline or upload failed - will retry automatically.";
+        setStatus("Offline or upload failed - will retry automatically.", "error");
+        allSucceeded = false;
         break;
       }
     }
   } finally {
     const remaining = await refreshQueueCount();
-    if (remaining === 0) statusEl.textContent = "Ready. All photos uploaded.";
+    if (remaining === 0) {
+      setStatus("Ready. All photos uploaded.", "ok");
+      if (hadItems && allSucceeded) showSuccessCheck();
+    }
     syncing = false;
   }
 }

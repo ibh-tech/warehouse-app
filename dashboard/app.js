@@ -6,6 +6,7 @@ const warehouseFilter = document.getElementById("warehouse-filter");
 const invoiceSearch = document.getElementById("invoice-search");
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
+const statsBar = document.getElementById("stats-bar");
 
 let allPhotos = [];
 
@@ -21,8 +22,16 @@ function formatTime(iso) {
   });
 }
 
+function isToday(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+}
+
 async function loadPhotos() {
-  loadingEl.style.display = "block";
+  loadingEl.classList.add("show");
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/photos?select=*&order=captured_at.desc`,
@@ -37,13 +46,32 @@ async function loadPhotos() {
     allPhotos = await res.json();
     render();
   } catch (err) {
-    loadingEl.textContent = "Could not load photos. Check your internet connection and try refreshing.";
+    loadingEl.querySelector("div:last-child").textContent =
+      "Could not load photos. Check your internet connection and try refreshing.";
+    loadingEl.querySelector(".spinner").style.display = "none";
     console.error(err);
   }
 }
 
+function renderStats(filtered) {
+  const total = filtered.length;
+  const today = filtered.filter((p) => isToday(p.captured_at)).length;
+  const perWarehouse = { 1: 0, 2: 0, 3: 0 };
+  for (const p of filtered) {
+    if (perWarehouse[p.warehouse] !== undefined) perWarehouse[p.warehouse]++;
+  }
+
+  statsBar.innerHTML = `
+    <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-value">${today}</div><div class="stat-label">Today</div></div>
+    <div class="stat"><div class="stat-value">${perWarehouse[1]}</div><div class="stat-label">Warehouse 1</div></div>
+    <div class="stat"><div class="stat-value">${perWarehouse[2]}</div><div class="stat-label">Warehouse 2</div></div>
+    <div class="stat"><div class="stat-value">${perWarehouse[3]}</div><div class="stat-label">Warehouse 3</div></div>
+  `;
+}
+
 function render() {
-  loadingEl.style.display = "none";
+  loadingEl.classList.remove("show");
 
   const wh = warehouseFilter.value;
   const q = invoiceSearch.value.trim().toLowerCase();
@@ -55,9 +83,10 @@ function render() {
   });
 
   countPill.textContent = `${filtered.length} photo${filtered.length === 1 ? "" : "s"}`;
+  renderStats(filtered);
 
   grid.innerHTML = "";
-  emptyEl.style.display = filtered.length === 0 ? "block" : "none";
+  emptyEl.classList.toggle("show", filtered.length === 0);
 
   for (const p of filtered) {
     const card = document.createElement("div");

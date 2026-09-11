@@ -60,6 +60,22 @@
     align-self: center;
   }
 
+  .stats-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 28px 0;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    min-width: 90px;
+  }
+  .stat .stat-value { font-size: 20px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+  .stat .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
   #grid {
     padding: 20px 28px 60px;
     display: grid;
@@ -73,6 +89,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 1px 2px rgba(20, 24, 31, 0.04), 0 4px 10px rgba(20, 24, 31, 0.06);
   }
   .card img {
     width: 100%;
@@ -98,11 +115,28 @@
     border-radius: 999px;
     font-weight: 600;
   }
-  #empty, #loading {
-    padding: 60px 28px;
+
+  #loading, #empty {
+    padding: 70px 28px;
     text-align: center;
     color: var(--text-dim);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
   }
+  #loading.show, #empty.show { display: flex; }
+
+  .spinner {
+    width: 30px; height: 30px;
+    border: 3px solid var(--panel-border);
+    border-top-color: var(--navy);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #empty svg { width: 44px; height: 44px; }
 
   #lightbox {
     position: fixed; inset: 0; background: rgba(0,0,0,0.85);
@@ -133,8 +167,20 @@
     <span class="count-pill" id="count-pill"></span>
   </div>
 
-  <div id="loading">Loading photos...</div>
-  <div id="empty" style="display:none">No photos match your filters.</div>
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <div id="loading" class="show">
+    <div class="spinner"></div>
+    <div>Loading photos...</div>
+  </div>
+  <div id="empty">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 8l9-5 9 5-9 5-9-5Z" stroke="#B7C4D3" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M3 8v8l9 5 9-5V8" stroke="#B7C4D3" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M12 13v8" stroke="#B7C4D3" stroke-width="1.6"/>
+    </svg>
+    <div>No photos match your filters.</div>
+  </div>
   <div id="grid"></div>
 
   <div id="lightbox"><img id="lightbox-img" src=""></div>
