@@ -1,4 +1,4 @@
-const CACHE_NAME = "warehouse-capture-shell-v2";
+const CACHE_NAME = "warehouse-capture-shell-v3";
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -7,7 +7,9 @@ const SHELL_FILES = [
   "./manifest.webmanifest",
   "./logo.png",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./icon-192-mono.png",
+  "./icon-512-mono.png"
 ];
 
 self.addEventListener("install", (event) => {
