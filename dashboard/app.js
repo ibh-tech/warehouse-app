@@ -53,20 +53,26 @@ async function loadPhotos() {
   }
 }
 
+const WAREHOUSE_NAMES = ["76", "FF", "PL", "BS", "AB", "NG", "Office"];
+
 function renderStats(filtered) {
   const total = filtered.length;
   const today = filtered.filter((p) => isToday(p.captured_at)).length;
-  const perWarehouse = { 1: 0, 2: 0, 3: 0 };
+  const perWarehouse = {};
+  for (const name of WAREHOUSE_NAMES) perWarehouse[name] = 0;
   for (const p of filtered) {
     if (perWarehouse[p.warehouse] !== undefined) perWarehouse[p.warehouse]++;
+    else perWarehouse[p.warehouse] = (perWarehouse[p.warehouse] || 0) + 1; // catches any older/unexpected values
   }
+
+  const whStatsHtml = Object.keys(perWarehouse)
+    .map((name) => `<div class="stat"><div class="stat-value">${perWarehouse[name]}</div><div class="stat-label">${escapeHtml(name)}</div></div>`)
+    .join("");
 
   statsBar.innerHTML = `
     <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Total</div></div>
     <div class="stat"><div class="stat-value">${today}</div><div class="stat-label">Today</div></div>
-    <div class="stat"><div class="stat-value">${perWarehouse[1]}</div><div class="stat-label">Warehouse 1</div></div>
-    <div class="stat"><div class="stat-value">${perWarehouse[2]}</div><div class="stat-label">Warehouse 2</div></div>
-    <div class="stat"><div class="stat-value">${perWarehouse[3]}</div><div class="stat-label">Warehouse 3</div></div>
+    ${whStatsHtml}
   `;
 }
 
