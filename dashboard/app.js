@@ -132,8 +132,9 @@ function render() {
       <div class="invoice">${p.invoice_number ? escapeHtml(p.invoice_number) : "(no invoice number)"}</div>
       <div class="meta-row">
         <span class="wh-tag">WH ${escapeHtml(String(p.warehouse))}</span>
-        <span>${formatTime(p.captured_at)}</span>
       </div>
+      <div class="time-row"><span class="time-label">Captured</span><span>${formatTime(p.captured_at)}</span></div>
+      <div class="time-row"><span class="time-label">Uploaded</span><span>${formatTime(p.uploaded_at)}</span></div>
     `;
 
     card.appendChild(imgWrap);
